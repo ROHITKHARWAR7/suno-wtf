@@ -1,42 +1,184 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-
-const SCENE_BASE_COUNTS: Record<string, number> = {
-  kitchen: 27,
-  majdoor: 14,
-  saloon: 19,
-  shaadi: 42,
-  breakup: 83,
-};
-
-const VARIANCE = 3; // How much the count can vary
-const UPDATE_INTERVAL = 8000; // Update every 8 seconds
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export function usePresenceCount(sceneId: string) {
-  const baseCount = SCENE_BASE_COUNTS[sceneId] || 20;
-  const [count, setCount] = useState(baseCount);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [presenceCount, setPresenceCount] = useState(0);
 
   useEffect(() => {
-    // Set initial random count
-    setCount(baseCount + Math.floor(Math.random() * VARIANCE) - Math.floor(VARIANCE / 2));
+    if (!sceneId) {
+      setPresenceCount(0);
+      return;
+    }
 
-    // Simulate organic changes
-    intervalRef.current = setInterval(() => {
-      setCount((prev) => {
-        const change = Math.floor(Math.random() * VARIANCE) - Math.floor(VARIANCE / 2);
-        const newCount = Math.max(baseCount - VARIANCE, Math.min(baseCount + VARIANCE, prev + change));
-        return newCount;
+    let cancelled = false;
+
+    const channelName = `presence:${sceneId}`;
+
+    /*
+     * IMPORTANT:
+     *
+     * Supabase reuses a channel when the same topic already
+     * exists. React Strict Mode can cause an old channel to
+     * still exist while this effect runs again.
+     *
+     * Remove any existing channel for this scene FIRST.
+     */
+    const setupPresence = async () => {
+      const existingChannel = supabase
+        .getChannels()
+        .find(
+          (channel) =>
+            channel.topic ===
+            `realtime:${channelName}`
+        );
+
+      if (existingChannel) {
+        await supabase.removeChannel(
+          existingChannel
+        );
+      }
+
+      if (cancelled) return;
+
+      /*
+       * Create a completely fresh channel.
+       */
+      const channel = supabase.channel(
+        channelName,
+        {
+          config: {
+            presence: {
+              key: crypto.randomUUID(),
+            },
+          },
+        }
+      );
+
+      /*
+       * Calculate current users.
+       */
+      const updatePresenceCount = () => {
+        if (cancelled) return;
+
+        const state =
+          channel.presenceState();
+
+        const count =
+          Object.keys(state).length;
+
+        setPresenceCount(count);
+      };
+
+      /*
+       * IMPORTANT:
+       *
+       * Register ALL Presence callbacks BEFORE
+       * subscribe().
+       */
+      channel
+        .on(
+          'presence',
+          { event: 'sync' },
+          () => {
+            updatePresenceCount();
+          }
+        )
+        .on(
+          'presence',
+          { event: 'join' },
+          () => {
+            updatePresenceCount();
+          }
+        )
+        .on(
+          'presence',
+          { event: 'leave' },
+          () => {
+            updatePresenceCount();
+          }
+        );
+
+      /*
+       * Now subscribe.
+       */
+      channel.subscribe(async (status) => {
+        if (cancelled) return;
+
+        if (status === 'SUBSCRIBED') {
+          try {
+            await channel.track({
+              sceneId,
+              onlineAt:
+                new Date().toISOString(),
+            });
+
+            updatePresenceCount();
+          } catch (error) {
+            console.error(
+              'Failed to track presence:',
+              error
+            );
+          }
+        }
+
+        if (
+          status === 'CHANNEL_ERROR' ||
+          status === 'TIMED_OUT'
+        ) {
+          console.error(
+            `Presence connection failed for ${sceneId}`
+          );
+
+          setPresenceCount(0);
+        }
       });
-    }, UPDATE_INTERVAL);
 
+      /*
+       * Cleanup function for this channel.
+       */
+      return channel;
+    };
+
+    let activeChannel:
+      | ReturnType<typeof supabase.channel>
+      | null = null;
+
+    setupPresence().then((channel) => {
+      if (cancelled) {
+        if (channel) {
+          supabase.removeChannel(channel);
+        }
+
+        return;
+      }
+
+      activeChannel = channel;
+    });
+
+    /*
+     * Cleanup.
+     */
     return () => {
-      if (intervalRef.current !== null) {
-        clearInterval(intervalRef.current);
+      cancelled = true;
+
+      setPresenceCount(0);
+
+      if (activeChannel) {
+        activeChannel
+          .untrack()
+          .catch(() => {
+            // Ignore cleanup errors.
+          })
+          .finally(() => {
+            supabase.removeChannel(
+              activeChannel!
+            );
+          });
       }
     };
-  }, [sceneId, baseCount]);
+  }, [sceneId]);
 
-  return count;
+  return presenceCount;
 }
