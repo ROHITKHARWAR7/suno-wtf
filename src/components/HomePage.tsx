@@ -31,7 +31,7 @@ export function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-900 to-slate-950 overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-purple-900 to-slate-950 overflow-hidden">
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {/* Gradient Orbs */}
@@ -41,7 +41,7 @@ export function HomePage() {
             y: [0, 50, 0],
           }}
           transition={{ duration: 20, repeat: Infinity }}
-          className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-transparent rounded-full blur-3xl"
+          className="absolute -top-40 -right-40 w-96 h-96 bg-linear-to-br from-pink-500/20 via-purple-500/20 to-transparent rounded-full blur-3xl"
         />
         <motion.div
           animate={{
@@ -49,7 +49,7 @@ export function HomePage() {
             y: [0, -50, 0],
           }}
           transition={{ duration: 25, repeat: Infinity }}
-          className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-transparent rounded-full blur-3xl"
+          className="absolute -bottom-40 -left-40 w-96 h-96 bg-linear-to-br from-cyan-500/20 via-blue-500/20 to-transparent rounded-full blur-3xl"
         />
         <motion.div
           animate={{
@@ -57,7 +57,7 @@ export function HomePage() {
             opacity: [0.3, 0.6, 0.3],
           }}
           transition={{ duration: 8, repeat: Infinity }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-indigo-500/20 to-transparent rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-linear-to-br from-indigo-500/20 to-transparent rounded-full blur-3xl"
         />
       </div>
 
@@ -75,10 +75,10 @@ export function HomePage() {
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full blur-xl opacity-75"
+                className="absolute inset-0 bg-linear-to-r from-pink-500 to-purple-500 rounded-full blur-xl opacity-75"
               />
-              <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 p-6 rounded-full">
-                <Music className="w-16 h-16 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500" />
+              <div className="relative bg-linear-to-br from-slate-900 to-slate-800 p-6 rounded-full">
+                <Music className="w-16 h-16 text-transparent bg-clip-text bg-linear-to-r from-pink-500 via-purple-500 to-cyan-500" />
               </div>
             </div>
           </motion.div>
@@ -96,14 +96,14 @@ export function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
                 SUNO
               </span>
               <span className="text-white">.WTF</span>
             </motion.h1>
 
             <motion.p
-              className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 mb-4"
+              className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-linear-to-r from-pink-300 via-purple-300 to-cyan-300 mb-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.8 }}

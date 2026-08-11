@@ -69,7 +69,7 @@ export function SceneCard({ scene, delay = 0 }: SceneCardProps) {
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-500/50"
+                className="flex items-center gap-2 px-3 py-1 rounded-full bg-linear-to-r from-green-500/30 to-emerald-500/30 border border-green-500/50"
               >
                 <Zap className="w-3 h-3 text-green-400" />
                 <span className="text-xs font-semibold text-green-300">Live</span>
