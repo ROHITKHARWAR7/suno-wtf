@@ -32,7 +32,7 @@ export function usePresenceCount(sceneId: string) {
       const existingChannel = supabase
         .getChannels()
         .find(
-          (channel) =>
+          (channel: { topic: string; }) =>
             channel.topic === `realtime:${channelName}`
         );
 
@@ -101,7 +101,7 @@ export function usePresenceCount(sceneId: string) {
       /*
        * Subscribe to the presence channel.
        */
-      channel.subscribe(async (status) => {
+      channel.subscribe(async (status: string) => {
         if (cancelled) return;
 
         if (status === 'SUBSCRIBED') {
