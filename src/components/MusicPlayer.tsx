@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Play,
   Pause,
   SkipBack,
   SkipForward,
+  Volume2,
+  Disc3,
 } from 'lucide-react';
 import YouTube, { YouTubeProps } from 'react-youtube';
 import { Track } from '@/types';
@@ -16,14 +19,6 @@ interface MusicPlayerProps {
   youtubePlaylistId: string;
 }
 
-/*
- * Neutral video used ONLY to initialize the YouTube iframe.
- *
- * The actual music playlist is loaded immediately after
- * the player becomes ready.
- *
- * This is NOT a scene song.
- */
 const PLAYER_INIT_VIDEO = 'M7lc1UVf-VE';
 
 export function MusicPlayer({
@@ -43,8 +38,13 @@ export function MusicPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  // Actual YouTube title
   const [youtubeTitle, setYoutubeTitle] = useState('');
+  const [showQueue, setShowQueue] = useState(false);
+
+  // Audio visualizer
+  const [visualizerBars, setVisualizerBars] = useState(
+    Array(8).fill(0)
+  );
 
   const currentTrack = useMemo(
     () =>
@@ -54,12 +54,6 @@ export function MusicPlayer({
     [playlist, currentTrackId]
   );
 
-  /*
-   * Reset player state whenever the scene playlist changes.
-   *
-   * This is important when moving between:
-   * Kitchen → Saloon → Shaadi → Breakup etc.
-   */
   useEffect(() => {
     setIsPlaying(false);
     setIsPlayerReady(false);
@@ -67,13 +61,26 @@ export function MusicPlayer({
     setCurrentTime(0);
     setDuration(0);
     setCurrentTrackId(playlist[0]?.id ?? '');
-
+    setShowQueue(false);
     playerRef.current = null;
   }, [youtubePlaylistId, playlist]);
 
-  /*
-   * Update progress and current YouTube title.
-   */
+  // Animate visualizer bars
+  useEffect(() => {
+    if (!isPlaying) {
+      setVisualizerBars(Array(8).fill(0));
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setVisualizerBars((prev) =>
+        prev.map(() => Math.random() * 100)
+      );
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       const player = playerRef.current;
@@ -81,11 +88,8 @@ export function MusicPlayer({
       if (!player || !isPlayerReady) return;
 
       try {
-        const time =
-          player.getCurrentTime?.() ?? 0;
-
-        const total =
-          player.getDuration?.() ?? 0;
+        const time = player.getCurrentTime?.() ?? 0;
+        const total = player.getDuration?.() ?? 0;
 
         setCurrentTime(time);
 
@@ -93,8 +97,7 @@ export function MusicPlayer({
           setDuration(total);
         }
 
-        const videoData =
-          player.getVideoData?.();
+        const videoData = player.getVideoData?.();
 
         if (videoData?.title) {
           setYoutubeTitle(videoData.title);
@@ -107,12 +110,6 @@ export function MusicPlayer({
     return () => clearInterval(interval);
   }, [isPlayerReady]);
 
-  /*
-   * YouTube iframe options.
-   *
-   * We intentionally DON'T put the playlist inside
-   * playerVars. We load the playlist explicitly.
-   */
   const opts: YouTubeProps['opts'] = {
     height: '1',
     width: '1',
@@ -124,9 +121,6 @@ export function MusicPlayer({
     },
   };
 
-  /*
-   * Player ready.
-   */
   const handleReady: YouTubeProps['onReady'] = (event) => {
     const player = event.target;
 
@@ -136,19 +130,6 @@ export function MusicPlayer({
     try {
       player.setLoop(false);
 
-      /*
-       * IMPORTANT:
-       *
-       * Load the playlist belonging to THIS scene.
-       *
-       * Examples:
-       *
-       * Kitchen  → PLPr-XuFuXX3I
-       * Majdoor  → PLZysXNxsYg_0
-       * Saloon   → PLeI8ucVnozxw
-       * Shaadi   → PLEwG0PgoYma4
-       * Breakup  → PLWN9Lxvnbb-0
-       */
       if (youtubePlaylistId) {
         player.loadPlaylist({
           list: youtubePlaylistId,
@@ -164,9 +145,6 @@ export function MusicPlayer({
     }
   };
 
-  /*
-   * YouTube state changes.
-   */
   const handleStateChange: YouTubeProps['onStateChange'] = (
     event
   ) => {
@@ -188,31 +166,19 @@ export function MusicPlayer({
       // Player may still be loading.
     }
 
-    /*
-     * PLAYING
-     */
     if (event.data === 1) {
       setIsPlaying(true);
     }
 
-    /*
-     * PAUSED
-     */
     if (event.data === 2) {
       setIsPlaying(false);
     }
 
-    /*
-     * ENDED
-     */
     if (event.data === 0) {
       setIsPlaying(false);
     }
   };
 
-  /*
-   * Play / Pause.
-   */
   function handleTogglePlay() {
     const player = playerRef.current;
 
@@ -237,9 +203,6 @@ export function MusicPlayer({
     }
   }
 
-  /*
-   * Next song.
-   */
   function handleNextTrack() {
     const player = playerRef.current;
 
@@ -255,15 +218,13 @@ export function MusicPlayer({
 
       setTimeout(() => {
         try {
-          const videoData =
-            player.getVideoData();
+          const videoData = player.getVideoData();
 
           if (videoData?.title) {
             setYoutubeTitle(videoData.title);
           }
 
-          const total =
-            player.getDuration();
+          const total = player.getDuration();
 
           if (total > 0) {
             setDuration(total);
@@ -280,9 +241,6 @@ export function MusicPlayer({
     }
   }
 
-  /*
-   * Previous song.
-   */
   function handlePreviousTrack() {
     const player = playerRef.current;
 
@@ -298,15 +256,13 @@ export function MusicPlayer({
 
       setTimeout(() => {
         try {
-          const videoData =
-            player.getVideoData();
+          const videoData = player.getVideoData();
 
           if (videoData?.title) {
             setYoutubeTitle(videoData.title);
           }
 
-          const total =
-            player.getDuration();
+          const total = player.getDuration();
 
           if (total > 0) {
             setDuration(total);
@@ -323,9 +279,6 @@ export function MusicPlayer({
     }
   }
 
-  /*
-   * Seek.
-   */
   function handleSeek(
     event: React.ChangeEvent<HTMLInputElement>
   ) {
@@ -344,9 +297,6 @@ export function MusicPlayer({
     }
   }
 
-  /*
-   * Format time.
-   */
   function formatTime(seconds: number) {
     if (
       !Number.isFinite(seconds) ||
@@ -364,9 +314,10 @@ export function MusicPlayer({
     )}`;
   }
 
+  const progress = duration ? (currentTime / duration) * 100 : 0;
+
   return (
     <div className="space-y-8">
-
       {/* =========================================
           INVISIBLE YOUTUBE PLAYER
       ========================================= */}
@@ -381,27 +332,8 @@ export function MusicPlayer({
         }}
       >
         <YouTube
-          /*
-           * IMPORTANT:
-           *
-           * The key forces React to create a completely
-           * new YouTube iframe whenever the scene changes.
-           *
-           * Therefore:
-           *
-           * Shaadi → new player
-           * Saloon → new player
-           * Kitchen → new player
-           * etc.
-           */
           key={youtubePlaylistId}
-
-          /*
-           * This is ONLY a neutral initialization video.
-           * It is immediately replaced by loadPlaylist().
-           */
           videoId={PLAYER_INIT_VIDEO}
-
           opts={opts}
           onReady={handleReady}
           onStateChange={handleStateChange}
@@ -409,203 +341,285 @@ export function MusicPlayer({
       </div>
 
       {/* =========================================
-          MAIN MUSIC PLAYER
+          MAIN MUSIC PLAYER CONTAINER
       ========================================= */}
 
-      <div className="rounded-3xl bg-slate-950/90 p-8 text-white shadow-2xl ring-1 ring-white/10">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="space-y-6 rounded-3xl backdrop-blur-sm p-8 shadow-2xl"
+        style={{
+          background: `linear-gradient(135deg, ${accentColor}15 0%, ${accentColor}05 100%)`,
+          border: `2px solid ${accentColor}30`,
+        }}
+      >
+        {/* =========================================
+            VISUALIZER
+        ========================================= */}
 
-        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <motion.div
+          className="flex items-end justify-center gap-2 h-32 rounded-2xl p-6"
+          style={{
+            background: `${accentColor}10`,
+            border: `1px solid ${accentColor}20`,
+          }}
+        >
+          {visualizerBars.map((height, i) => (
+            <motion.div
+              key={i}
+              className="flex-1 rounded-full"
+              style={{
+                backgroundColor: accentColor,
+                height: `${Math.max(10, height)}%`,
+              }}
+              animate={{
+                scaleY: isPlaying ? 1 : 0.3,
+              }}
+              transition={{
+                duration: 0.1,
+              }}
+            />
+          ))}
+        </motion.div>
 
-          {/* TRACK INFORMATION */}
+        {/* =========================================
+            TRACK INFORMATION
+        ========================================= */}
 
-          <div className="min-w-0">
-
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
-              Now playing
-            </p>
-
-            <h2 className="mt-3 truncate text-3xl font-bold tracking-tight">
-              {youtubeTitle ||
-                currentTrack?.title ||
-                'No song playing'}
-            </h2>
-
-            <p className="mt-2 truncate text-sm text-slate-300">
-              {youtubeTitle
-                ? 'YouTube'
-                : currentTrack?.artist ?? 'YouTube'}
-            </p>
-
-          </div>
-
-          {/* CONTROLS */}
-
-          <div className="flex shrink-0 items-center gap-3 rounded-3xl bg-white/10 p-3 shadow-inner">
-
-            {/* PREVIOUS */}
-
-            <button
-              disabled={!isPlayerReady}
-              className="rounded-full bg-white/10 p-3 transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50"
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          key={youtubeTitle}
+          className="text-center"
+        >
+          <motion.div
+            animate={{ rotate: isPlaying ? 360 : 0 }}
+            transition={{
+              duration: isPlaying ? 3 : 0,
+              repeat: Infinity,
+              ease: 'linear',
+            }}
+            className="flex justify-center mb-4"
+          >
+            <Disc3
+              className="w-12 h-12"
               style={{ color: accentColor }}
-              onClick={handlePreviousTrack}
-              aria-label="Previous track"
-            >
-              <SkipBack className="h-5 w-5" />
-            </button>
+            />
+          </motion.div>
 
-            {/* PLAY / PAUSE */}
+          <p className="text-xs uppercase tracking-widest opacity-60 mb-2">
+            Now playing
+          </p>
 
-            <button
-              disabled={!isPlayerReady}
-              className="rounded-full bg-white/10 p-3 transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50"
-              style={{ color: accentColor }}
-              onClick={handleTogglePlay}
-              aria-label={
-                isPlaying
-                  ? 'Pause'
-                  : 'Play'
-              }
-            >
-              {isPlaying ? (
-                <Pause className="h-5 w-5" />
-              ) : (
-                <Play className="h-5 w-5" />
-              )}
-            </button>
+          <h2
+            className="text-3xl md:text-4xl font-bold tracking-tight mb-2 line-clamp-2"
+            style={{
+              background: `linear-gradient(90deg, ${accentColor}, #fff)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            {youtubeTitle || currentTrack?.title || 'No song playing'}
+          </h2>
 
-            {/* NEXT */}
-
-            <button
-              disabled={!isPlayerReady}
-              className="rounded-full bg-white/10 p-3 transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50"
-              style={{ color: accentColor }}
-              onClick={handleNextTrack}
-              aria-label="Next track"
-            >
-              <SkipForward className="h-5 w-5" />
-            </button>
-
-          </div>
-
-        </div>
+          <p className="text-sm opacity-70">
+            {youtubeTitle ? 'YouTube Music' : currentTrack?.artist ?? 'YouTube'}
+          </p>
+        </motion.div>
 
         {/* =========================================
             PROGRESS BAR
         ========================================= */}
 
-        <div className="mt-8">
+        <div className="space-y-3">
+          <div
+            className="relative h-2 rounded-full overflow-hidden cursor-pointer group/bar"
+            style={{ backgroundColor: `${accentColor}15` }}
+          >
+            <motion.div
+              className="h-full rounded-full"
+              style={{
+                backgroundColor: accentColor,
+              }}
+              animate={{ width: `${progress}%` }}
+              transition={{ type: 'tween', duration: 0.1 }}
+            >
+              <motion.div
+                className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full shadow-lg group-hover/bar:scale-125"
+                style={{
+                  backgroundColor: accentColor,
+                }}
+                whileHover={{ scale: 1.3 }}
+              />
+            </motion.div>
 
-          <input
-            type="range"
-            min="0"
-            max={duration || 100}
-            value={Math.min(
-              currentTime,
-              duration || 100
-            )}
-            onChange={handleSeek}
-            className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/10"
-            aria-label="Seek music"
-          />
-
-          <div className="mt-2 flex justify-between text-xs text-slate-500">
-
-            <span>
-              {formatTime(currentTime)}
-            </span>
-
-            <span>
-              {formatTime(duration)}
-            </span>
-
+            <input
+              type="range"
+              min="0"
+              max={duration || 100}
+              value={Math.min(currentTime, duration || 100)}
+              onChange={handleSeek}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+              aria-label="Seek music"
+            />
           </div>
 
+          <div className="flex justify-between text-xs opacity-60">
+            <span>{formatTime(currentTime)}</span>
+            <span>{formatTime(duration)}</span>
+          </div>
         </div>
 
-      </div>
+        {/* =========================================
+            CONTROLS
+        ========================================= */}
+
+        <div className="flex items-center justify-center gap-6">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            disabled={!isPlayerReady}
+            className="p-3 rounded-full transition-all"
+            style={{
+              backgroundColor: `${accentColor}15`,
+              color: accentColor,
+              border: `2px solid ${accentColor}30`,
+              opacity: !isPlayerReady ? 0.5 : 1,
+            }}
+            onClick={handlePreviousTrack}
+            aria-label="Previous track"
+          >
+            <SkipBack className="h-6 w-6" />
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.9 }}
+            disabled={!isPlayerReady}
+            className="p-5 rounded-full transition-all shadow-lg"
+            style={{
+              backgroundColor: accentColor,
+              color: '#fff',
+              opacity: !isPlayerReady ? 0.6 : 1,
+            }}
+            onClick={handleTogglePlay}
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+          >
+            {isPlaying ? (
+              <Pause className="h-7 w-7 fill-current" />
+            ) : (
+              <Play className="h-7 w-7 fill-current ml-1" />
+            )}
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            disabled={!isPlayerReady}
+            className="p-3 rounded-full transition-all"
+            style={{
+              backgroundColor: `${accentColor}15`,
+              color: accentColor,
+              border: `2px solid ${accentColor}30`,
+              opacity: !isPlayerReady ? 0.5 : 1,
+            }}
+            onClick={handleNextTrack}
+            aria-label="Next track"
+          >
+            <SkipForward className="h-6 w-6" />
+          </motion.button>
+        </div>
+
+        {/* Queue Toggle */}
+        {playlist.length > 0 && (
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowQueue(!showQueue)}
+            className="w-full py-3 px-4 rounded-lg font-semibold text-sm uppercase tracking-wide transition-all"
+            style={{
+              backgroundColor: `${accentColor}15`,
+              color: accentColor,
+              border: `1px solid ${accentColor}30`,
+            }}
+          >
+            {showQueue ? 'Hide Queue' : 'Show Queue'}
+          </motion.button>
+        )}
+      </motion.div>
 
       {/* =========================================
-          LOCAL QUEUE
-          
-          Empty now because YouTube is the real
-          playlist source.
+          QUEUE LIST
       ========================================= */}
 
-      {playlist.length > 0 && (
-        <div className="grid gap-3 rounded-3xl bg-white/90 p-5 text-slate-900 shadow-lg">
-
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+      {showQueue && playlist.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="space-y-3 rounded-3xl p-6 shadow-lg"
+          style={{
+            background: `linear-gradient(135deg, ${accentColor}10 0%, ${accentColor}05 100%)`,
+            border: `2px solid ${accentColor}20`,
+          }}
+        >
+          <p
+            className="text-sm font-semibold uppercase tracking-widest"
+            style={{ color: accentColor }}
+          >
             Queue
           </p>
 
-          <div className="space-y-2">
-
-            {playlist.map((track) => (
-
-              <button
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {playlist.map((track, index) => (
+              <motion.button
                 key={track.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.03 }}
                 onClick={() => {
-
                   setCurrentTrackId(track.id);
 
-                  const player =
-                    playerRef.current;
+                  const player = playerRef.current;
 
-                  if (
-                    player &&
-                    isPlayerReady
-                  ) {
+                  if (player && isPlayerReady) {
                     player.playVideo();
                   }
 
                   setIsPlaying(true);
-
                 }}
-                className={`w-full rounded-2xl px-4 py-3 text-left transition hover:bg-slate-100 ${
-                  track.id === currentTrack?.id
-                    ? 'bg-slate-100'
-                    : ''
-                }`}
+                className="w-full rounded-2xl px-4 py-3 text-left transition-all group"
+                style={{
+                  backgroundColor:
+                    track.id === currentTrack?.id
+                      ? `${accentColor}20`
+                      : 'transparent',
+                }}
+                whileHover={{ x: 4 }}
               >
-
-                <div className="flex items-center justify-between gap-2">
-
-                  <div className="min-w-0">
-
-                    <p className="truncate font-semibold">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <motion.p className="truncate font-semibold text-sm group-hover:opacity-80 transition">
                       {track.title}
-                    </p>
+                    </motion.p>
 
-                    <p className="truncate text-xs text-slate-500">
+                    <p className="truncate text-xs opacity-60">
                       {track.artist}
                     </p>
-
                   </div>
 
-                  <span className="shrink-0 text-xs text-slate-400">
-
-                    {Math.floor(
-                      track.duration / 60
-                    )}
-                    :
-                    {String(
-                      track.duration % 60
-                    ).padStart(2, '0')}
-
+                  <span className="shrink-0 text-xs opacity-50">
+                    {Math.floor(track.duration / 60)}:
+                    {String(track.duration % 60).padStart(2, '0')}
                   </span>
-
                 </div>
-
-              </button>
-
+              </motion.button>
             ))}
-
           </div>
-
-        </div>
+        </motion.div>
       )}
-
     </div>
   );
 }

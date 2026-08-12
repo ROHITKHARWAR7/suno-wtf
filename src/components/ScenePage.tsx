@@ -9,7 +9,7 @@ import { usePresenceCount } from '@/hooks/usePresenceCount';
 import { Navigation } from './Navigation';
 
 interface ScenePageProps {
-  scene: Scene;
+  scene: Scene & { youtubePlaylistId?: string };
 }
 
 export function ScenePage({ scene }: ScenePageProps) {
@@ -54,11 +54,11 @@ export function ScenePage({ scene }: ScenePageProps) {
             className="lg:col-span-2"
           >
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
-             <MusicPlayer
-             playlist={scene.playlist}
-             accentColor={scene.atmosphere.accentColor}
-             youtubePlaylistId={scene.youtubePlaylistId}
-             />
+              <MusicPlayer
+                playlist={scene.playlist}
+                accentColor={scene.atmosphere.accentColor}
+                youtubePlaylistId={scene.youtubePlaylistId || ''}
+              />
             </div>
           </motion.div>
 
