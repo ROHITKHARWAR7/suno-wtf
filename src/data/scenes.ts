@@ -119,7 +119,7 @@ export const SCENES: Record<
     statusText: 'Join the wedding',
 
     // Shaadi YouTube playlist
-    youtubePlaylistId: 'PLEwG0PgoYma4',
+    youtubePlaylistId: 'PLDSv9Hrj24qo',
 
     theme: {
       primary: '#C70039',
