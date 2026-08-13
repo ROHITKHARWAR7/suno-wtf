@@ -1,6 +1,15 @@
+// Complete scenes.ts file with Bhojpuri properly integrated
+
 import { Scene } from '@/types';
 
-export const SCENES: Record<string, Scene> = {
+// All scenes configuration
+export const SCENES: Record<
+  string,
+  Scene & {
+    youtubePlaylistId?: string;
+    bhojpuriQuotes?: string[];
+  }
+> = {
   kitchen: {
     id: 'kitchen',
     slug: 'kitchen',
@@ -9,6 +18,9 @@ export const SCENES: Record<string, Scene> = {
     description: 'Late-night cooking sessions',
     activeText: 'COOKING RIGHT NOW',
     statusText: 'Join the kitchen',
+
+    // Kitchen YouTube playlist
+    youtubePlaylistId: 'PLPr-XuFuXX3I',
 
     theme: {
       primary: '#F5E6D3',
@@ -27,9 +39,6 @@ export const SCENES: Record<string, Scene> = {
       particles: true,
     },
 
-    // Kitchen YouTube playlist
-    youtubePlaylistId: 'PLPr-XuFuXX3I',
-
     // Songs come directly from YouTube
     playlist: [],
   },
@@ -37,31 +46,31 @@ export const SCENES: Record<string, Scene> = {
   majdoor: {
     id: 'majdoor',
     slug: 'majdoor',
-    name: 'Majdoor',
+    name: 'Dihadi Majdoor',
     emoji: '🔨',
-    description: 'Working hands, building dreams',
+    description: 'Hard work, harder beats',
     activeText: 'WORKING RIGHT NOW',
-    statusText: 'Join the work',
-
-    theme: {
-      primary: '#E8E8E8',
-      secondary: '#8B7D6B',
-      accent: '#A0744D',
-      background: '#F5F5F5',
-      text: '#2D2D2D',
-      muted: '#9B9B9B',
-    },
-
-    atmosphere: {
-      primaryColor: '#E8E8E8',
-      accentColor: '#A0744D',
-      gradientStart: '#F5F5F5',
-      gradientEnd: '#E8E8E8',
-      particles: true,
-    },
+    statusText: 'Join the grind',
 
     // Majdoor YouTube playlist
     youtubePlaylistId: 'PLZysXNxsYg_0',
+
+    theme: {
+      primary: '#2C3E50',
+      secondary: '#34495E',
+      accent: '#E74C3C',
+      background: '#ECF0F1',
+      text: '#2C3E50',
+      muted: '#7F8C8D',
+    },
+
+    atmosphere: {
+      primaryColor: '#2C3E50',
+      accentColor: '#E74C3C',
+      gradientStart: '#ECF0F1',
+      gradientEnd: '#BDC3C7',
+      particles: true,
+    },
 
     // Songs come directly from YouTube
     playlist: [],
@@ -72,29 +81,29 @@ export const SCENES: Record<string, Scene> = {
     slug: 'saloon',
     name: 'Saloon',
     emoji: '💈',
-    description: 'Mirrors and fresh cuts',
-    activeText: 'GETTING READY RIGHT NOW',
+    description: 'Chill vibes and good grooming',
+    activeText: 'GETTING FRESH NOW',
     statusText: 'Join the saloon',
 
+    // Updated Saloon YouTube playlist
+    youtubePlaylistId: 'PLQM6BDQ8SS1A',
+
     theme: {
-      primary: '#2D5A52',
-      secondary: '#4A8F7B',
-      accent: '#E8D5B7',
-      background: '#F0F3F1',
-      text: '#2D2D2D',
-      muted: '#708B85',
+      primary: '#1A1A1A',
+      secondary: '#333333',
+      accent: '#FFB800',
+      background: '#F5F5F5',
+      text: '#1A1A1A',
+      muted: '#999999',
     },
 
     atmosphere: {
-      primaryColor: '#2D5A52',
-      accentColor: '#E8D5B7',
-      gradientStart: '#F0F3F1',
-      gradientEnd: '#2D5A52',
-      particles: false,
+      primaryColor: '#1A1A1A',
+      accentColor: '#FFB800',
+      gradientStart: '#F5F5F5',
+      gradientEnd: '#E0E0E0',
+      particles: true,
     },
-
-    // Saloon YouTube playlist
-    youtubePlaylistId: 'PLQM6BDQ8SS1A',
 
     // Songs come directly from YouTube
     playlist: [],
@@ -105,29 +114,29 @@ export const SCENES: Record<string, Scene> = {
     slug: 'shaadi',
     name: 'Shaadi',
     emoji: '💍',
-    description: 'Celebrations and new beginnings',
-    activeText: 'CELEBRATING RIGHT NOW',
-    statusText: 'Join the celebration',
-
-    theme: {
-      primary: '#8B1A1A',
-      secondary: '#D4AF37',
-      accent: '#FFE4E1',
-      background: '#FFF8F0',
-      text: '#2D2D2D',
-      muted: '#C4A574',
-    },
-
-    atmosphere: {
-      primaryColor: '#8B1A1A',
-      accentColor: '#D4AF37',
-      gradientStart: '#FFF8F0',
-      gradientEnd: '#8B1A1A',
-      particles: true,
-    },
+    description: 'Wedding celebrations and romance',
+    activeText: 'CELEBRATING NOW',
+    statusText: 'Join the wedding',
 
     // Shaadi YouTube playlist
     youtubePlaylistId: 'PLEwG0PgoYma4',
+
+    theme: {
+      primary: '#C70039',
+      secondary: '#FF5733',
+      accent: '#FFC300',
+      background: '#FFF9E6',
+      text: '#8B0000',
+      muted: '#FF6B6B',
+    },
+
+    atmosphere: {
+      primaryColor: '#C70039',
+      accentColor: '#FFC300',
+      gradientStart: '#FFF9E6',
+      gradientEnd: '#FFE6E6',
+      particles: true,
+    },
 
     // Songs come directly from YouTube
     playlist: [],
@@ -138,47 +147,103 @@ export const SCENES: Record<string, Scene> = {
     slug: 'breakup',
     name: 'Breakup',
     emoji: '💔',
-    description: 'Songs that hurt',
-    activeText: 'HEALING RIGHT NOW',
-    statusText: 'Join the midnight',
-
-    theme: {
-      primary: '#1A1A2E',
-      secondary: '#16213E',
-      accent: '#C1121F',
-      background: '#0F3460',
-      text: '#E5E5E5',
-      muted: '#8B8B8B',
-    },
-
-    atmosphere: {
-      primaryColor: '#1A1A2E',
-      accentColor: '#C1121F',
-      gradientStart: '#0F3460',
-      gradientEnd: '#1A1A2E',
-      particles: false,
-    },
+    description: 'Heartbreak and healing songs',
+    activeText: 'HEALING NOW',
+    statusText: 'Join the healing',
 
     // Breakup YouTube playlist
     youtubePlaylistId: 'PLWN9Lxvnbb-0',
 
+    theme: {
+      primary: '#2C3E50',
+      secondary: '#34495E',
+      accent: '#E67E22',
+      background: '#ECF0F1',
+      text: '#2C3E50',
+      muted: '#95A5A6',
+    },
+
+    atmosphere: {
+      primaryColor: '#2C3E50',
+      accentColor: '#E67E22',
+      gradientStart: '#ECF0F1',
+      gradientEnd: '#D5DBDB',
+      particles: true,
+    },
+
     // Songs come directly from YouTube
     playlist: [],
   },
+
+  bhojpuri: {
+    id: 'bhojpuri',
+    slug: 'bhojpuri',
+    name: 'Bhojpuri Banger',
+    emoji: '🎬',
+    description: 'Depression ki dawa hove bhojpuri gana',
+    activeText: 'LISTENING NOW',
+    statusText: 'Join the banger',
+
+    // Bhojpuri YouTube playlist
+    youtubePlaylistId: 'PLcex0xtT6_Gs',
+
+    theme: {
+      primary: '#8B4513',
+      secondary: '#D2691E',
+      accent: '#FF6B35',
+      background: '#FFF8DC',
+      text: '#2C1810',
+      muted: '#A0826D',
+    },
+
+    atmosphere: {
+      primaryColor: '#8B4513',
+      accentColor: '#FF6B35',
+      gradientStart: '#FFF8DC',
+      gradientEnd: '#FFE4B5',
+      particles: true,
+    },
+
+    // Songs come directly from YouTube
+    playlist: [],
+
+    bhojpuriQuotes: [
+      'Depression ki dawa hove bhojpuri gana 💔',
+      'Dil se Bhojpuri, Jaan se Bhojpuri 🎵',
+      'Prem Kahani, Bhojpuri Zubani 💕',
+      'Gawat ke dard, Bhojpuri gana se kam',
+      'Jab dil bhare, Bhojpuri sune 🎶',
+      'Bhojpuri gana, Dil ka Ilaaj',
+      'Pyaar ki bhasya, Bhojpuri Bhasha',
+      'Khushi ka Code, Bhojpuri Mode 🔥',
+      'Dukh-sukh sab, Bhojpuri mein',
+      'Jeevan ka Raag, Bhojpuri Swag',
+      'Bhaiya, Bhojpuri gana suno 🎤',
+      'Heart teri, Bhojpuri meri',
+    ],
+  },
 };
 
-export const SCENE_ORDER = [
+// Order of scenes to display
+export const SCENE_ORDER: Array<keyof typeof SCENES> = [
   'kitchen',
   'majdoor',
   'saloon',
   'shaadi',
   'breakup',
+  'bhojpuri',
 ];
 
-export function getScene(slug: string): Scene | null {
-  return SCENES[slug] || null;
+// Get all scenes in order
+export function getAllScenes() {
+  return SCENE_ORDER
+    .map((sceneId) => SCENES[sceneId])
+    .filter(Boolean);
 }
 
-export function getAllScenes(): Scene[] {
-  return SCENE_ORDER.map((slug) => SCENES[slug]);
+// Get a specific scene by slug
+export function getScene(slug: string) {
+  return Object.values(SCENES).find(
+    (scene) => scene.slug === slug
+  );
 }
